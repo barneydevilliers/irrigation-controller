@@ -97,9 +97,9 @@ DROP TABLE IF EXISTS `starts`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `starts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `program` int(11) DEFAULT NULL,
+  `programid` int(11) DEFAULT NULL,
   `timeofday` varchar(45) DEFAULT NULL,
-  `evendays` int(11) DEFAULT NULL,
+  `days` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
