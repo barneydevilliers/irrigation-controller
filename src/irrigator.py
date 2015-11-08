@@ -67,7 +67,7 @@ def checkforstarts():
     selectStatement = "SELECT programid FROM starts WHERE starts.timeofday='" + currentTime + "'" + evenDaySearchString
     print selectStatement
 
-    database = MySQLdb.connect("localhost", "root", "root", "irrigation")
+    database = MySQLdb.connect("farmserver", "root", "root", "irrigation")
     cursor = database.cursor()
     cursor.execute(selectStatement)
     results = cursor.fetchall()
