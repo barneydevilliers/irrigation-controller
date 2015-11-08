@@ -61,7 +61,7 @@ def checkforstarts():
     if (dayOfMonth%2 == 1):
         evenDaySearchString = " AND ( (starts.days = 'odd') OR (starts.days = 'all') )"
     else:
-        evenDaySearchString = " AND ( (starts.days = 'odd') OR (starts.days = 'all') )"
+        evenDaySearchString = " AND ( (starts.days = 'even') OR (starts.days = 'all') )"
 
     currentTime = "12:00"
     selectStatement = "SELECT programid FROM starts WHERE starts.timeofday='" + currentTime + "'" + evenDaySearchString
