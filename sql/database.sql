@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.24, for linux-glibc2.5 (x86_64)
+-- MySQL dump 10.13  Distrib 5.6.24, for debian-linux-gnu (x86_64)
 --
--- Host: 127.0.0.1    Database: irrigation
+-- Host: farmserver    Database: irrigation
 -- ------------------------------------------------------
--- Server version	5.6.27
+-- Server version	5.5.31-0+wheezy1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -23,12 +23,12 @@ DROP TABLE IF EXISTS `lines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `lines` (
-  `id` int(11) NOT NULL,
-  `name` varchar(45) DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `description` varchar(45) DEFAULT NULL,
   `interface` varchar(45) DEFAULT NULL,
-  `linescol` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -37,6 +37,7 @@ CREATE TABLE `lines` (
 
 LOCK TABLES `lines` WRITE;
 /*!40000 ALTER TABLE `lines` DISABLE KEYS */;
+INSERT INTO `lines` VALUES (1,'Vegetable Garden','1'),(2,'Backyard','2'),(3,'Frontyard','3'),(4,'Greenhouse','4'),(5,'Watertank','5');
 /*!40000 ALTER TABLE `lines` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -48,10 +49,11 @@ DROP TABLE IF EXISTS `programs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `programs` (
-  `id` int(11) NOT NULL,
-  `name` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `description` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -60,6 +62,7 @@ CREATE TABLE `programs` (
 
 LOCK TABLES `programs` WRITE;
 /*!40000 ALTER TABLE `programs` DISABLE KEYS */;
+INSERT INTO `programs` VALUES (1,'Odd Days Morning Program'),(2,'Even Days Morning Program'),(3,'Midday Nursery Program');
 /*!40000 ALTER TABLE `programs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -71,12 +74,14 @@ DROP TABLE IF EXISTS `programsequence`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `programsequence` (
-  `id` int(11) NOT NULL,
-  `programid` int(11) DEFAULT NULL,
-  `lineid` int(11) DEFAULT NULL,
-  `order` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `programid` int(11) NOT NULL,
+  `lineid` int(11) NOT NULL,
+  `order` int(11) NOT NULL DEFAULT '0',
+  `runtime` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -85,6 +90,7 @@ CREATE TABLE `programsequence` (
 
 LOCK TABLES `programsequence` WRITE;
 /*!40000 ALTER TABLE `programsequence` DISABLE KEYS */;
+INSERT INTO `programsequence` VALUES (1,1,1,1,40),(2,1,3,2,10),(3,1,4,3,10),(4,1,5,4,5),(5,2,1,1,5),(6,2,2,2,30),(7,2,3,3,10),(8,2,4,4,10),(9,2,5,5,5),(10,3,4,1,0);
 /*!40000 ALTER TABLE `programsequence` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -99,10 +105,10 @@ CREATE TABLE `starts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `programid` int(11) DEFAULT NULL,
   `timeofday` varchar(45) DEFAULT NULL,
-  `days` int(11) DEFAULT NULL,
+  `days` varchar(4) NOT NULL DEFAULT 'ALL',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -111,6 +117,7 @@ CREATE TABLE `starts` (
 
 LOCK TABLES `starts` WRITE;
 /*!40000 ALTER TABLE `starts` DISABLE KEYS */;
+INSERT INTO `starts` VALUES (1,1,'06:00','ODD'),(2,2,'06:00','EVEN'),(3,3,'12:00','ALL');
 /*!40000 ALTER TABLE `starts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -123,4 +130,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-11-02 15:38:05
+-- Dump completed on 2015-11-12 19:59:21
