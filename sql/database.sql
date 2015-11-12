@@ -77,7 +77,7 @@ CREATE TABLE `programsequence` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `programid` int(11) NOT NULL,
   `lineid` int(11) NOT NULL,
-  `order` int(11) NOT NULL DEFAULT '0',
+  `sequenceorder` int(11) NOT NULL DEFAULT '0',
   `runtime` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
@@ -90,7 +90,7 @@ CREATE TABLE `programsequence` (
 
 LOCK TABLES `programsequence` WRITE;
 /*!40000 ALTER TABLE `programsequence` DISABLE KEYS */;
-INSERT INTO `programsequence` VALUES (1,1,1,1,40),(2,1,3,2,10),(3,1,4,3,10),(4,1,5,4,5),(5,2,1,1,5),(6,2,2,2,30),(7,2,3,3,10),(8,2,4,4,10),(9,2,5,5,5),(10,3,4,1,0);
+INSERT INTO `programsequence` VALUES (1,1,1,1,40),(2,1,3,2,10),(3,1,4,3,10),(4,1,5,4,5),(5,2,1,1,5),(6,2,2,2,30),(7,2,3,3,10),(8,2,4,4,10),(9,2,5,5,5),(10,3,4,1,5);
 /*!40000 ALTER TABLE `programsequence` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -117,7 +117,7 @@ CREATE TABLE `starts` (
 
 LOCK TABLES `starts` WRITE;
 /*!40000 ALTER TABLE `starts` DISABLE KEYS */;
-INSERT INTO `starts` VALUES (1,1,'06:00','ODD'),(2,2,'06:00','EVEN'),(3,3,'12:00','ALL');
+INSERT INTO `starts` VALUES (1,1,'06:00','odd'),(2,2,'06:00','even'),(3,3,'12:00','all');
 /*!40000 ALTER TABLE `starts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -130,4 +130,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-11-12 19:59:21
+-- Dump completed on 2015-11-12 20:41:02

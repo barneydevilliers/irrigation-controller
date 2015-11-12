@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import argparse
 import time
 import MySQLdb
 from time import strftime
@@ -15,14 +16,19 @@ def start(lineid):
 def stop(lineid):
     print "stopping " + str(lineid)
 
+def getDatabaseConnection():
+    database = MySQLdb.connect("farmserver", "root", "root", "irrigation")
+    return database
+
 class ProgramSequence:
 
     activeProgramSequence = False
     sequence = []
     currentItem = 0
 
-    def __init__(self,programid,cursor):
-        select = "SELECT lineid, duration FROM programsequence WHERE programid=" + str(programid) + " ORDER BY seqorder ASC"
+    def __init__(self,programid,database):
+        select = "SELECT lineid, runtime FROM programsequence WHERE programid=" + str(programid) + " ORDER BY sequenceorder ASC"
+        cursor = database.cursor()
         cursor.execute(select)
         self.sequence = cursor.fetchall()
 
@@ -50,7 +56,7 @@ class ProgramSequence:
 
 
 
-def checkforstarts():
+def checkforstarts(database):
 
     #Get current time
     currentTime = strftime("%H:%M", time.localtime())
@@ -63,14 +69,18 @@ def checkforstarts():
     else:
         evenDaySearchString = " AND ( (starts.days = 'even') OR (starts.days = 'all') )"
 
-    currentTime = "12:00"
+    overrideTime = "12:00"
+    print "Detecting current time as " + currentTime + " but using " + overrideTime + " instead for debugging"
+    currentTime = overrideTime
+
     selectStatement = "SELECT programid FROM starts WHERE starts.timeofday='" + currentTime + "'" + evenDaySearchString
     print selectStatement
 
-    database = MySQLdb.connect("farmserver", "root", "root", "irrigation")
     cursor = database.cursor()
     cursor.execute(selectStatement)
     results = cursor.fetchall()
+
+    return results
 
 
     for result in results:
@@ -88,7 +98,12 @@ while False:
 
     checkforstarts()
 
-checkforstarts()
+
+database = getDatabaseConnection()
+
+for programsequenceinfo in checkforstarts(database):
+    print "result item : " + str(programsequenceinfo)
+    activeProgramSequences.append(ProgramSequence(programsequenceinfo[0], database))
 
 for programSequence in activeProgramSequences:
     print programSequence
