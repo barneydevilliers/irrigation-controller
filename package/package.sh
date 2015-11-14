@@ -18,6 +18,10 @@ cd $FULL_NAME
 mkdir -p ./usr/bin/
 cp $BASE_FOLDER/../src/irrigator.py ./usr/bin/
 
+#create the init script
+mkdir -p ./etc/init.d/
+cp $BASE_FOLDER/../init.d/irrigator ./etc/init.d/
+
 #create config files
 mkdir -p ./etc/
 cp $BASE_FOLDER/../config/irrigation-controller.yaml ./etc/

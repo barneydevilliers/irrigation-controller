@@ -7,6 +7,7 @@ import MySQLdb
 import sys
 from time import strftime
 import datetime
+from daemon import runner
 
 activeProgramSequences = []
 
@@ -35,28 +36,13 @@ def verboseLog(message):
         log(message)
 
 
-def parseArgumentsAndLoadConfig():
-    parser = argparse.ArgumentParser(description='Irrigation Controller Service')
+def loadConfig():
 
-    parser.add_argument('--configfile', nargs=1,        help='configuration file to use', default=['/etc/irrigation-controller.yaml'])
-    parser.add_argument('--console',    action='count', help='run service in console instead of forked service')
-    parser.add_argument('--verbose',    action='count', help='provide verbose debugging')
-
-    args = parser.parse_args()
-
-    configFileName = args.configfile[0]
-
-    global consoleMode
-    if (args.verbose > 0):
-        consoleMode = True
+    if ('console' == sys.argv[1]) and (len(sys.argv) > 2):
+        configFileName = sys.argv[2]
     else:
-        consoleMode = False
+        configFileName = '/etc/irrigation-controller.yaml'
 
-    global verboseActive
-    if (args.verbose > 0):
-        verboseActive = True
-    else:
-        verboseActive = False
 
     configFile = open(configFileName)
     global config
@@ -65,12 +51,10 @@ def parseArgumentsAndLoadConfig():
     config = Struct(**configDict)
 
     welcomeString = "Starting Irrigation Controller in "
-    if consoleMode:
+    if 'console' == sys.argv[1]:
         welcomeString += "console mode"
     else:
         welcomeString += "forked service"
-    if verboseActive:
-        welcomeString += " with verbose logging"
     log(welcomeString)
 
     log("Parsed the configuration in " + configFileName + " as " + str(configDict))
@@ -174,7 +158,8 @@ def checkforstarts(database):
 
 
 def main():
-    parseArgumentsAndLoadConfig()
+
+    loadConfig()
 
     while True:
         #sleep until the next minute boundary
@@ -200,6 +185,25 @@ def main():
 
 
 
+class ServiceDaemon():
+    def __init__(self):
+        self.stdin_path = '/dev/null'
+        self.stdout_path = '/dev/tty'
+        self.stderr_path = '/dev/tty'
+        self.pidfile_path =  '/tmp/irrigator.pid'
+        self.pidfile_timeout = 5
+
+    def run(self):
+        main()
+
+
 if __name__ == '__main__':
-    main()
+
+    if 'console' == sys.argv[1]:
+        main()
+    else:
+	daemon = ServiceDaemon()
+        daemon_runner = runner.DaemonRunner(daemon)
+        daemon_runner.do_action()
+
 
