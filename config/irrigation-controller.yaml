@@ -1,0 +1,8 @@
+
+database:
+  host : farmserver
+  username : root
+  password : root
+
+logFileName : /var/log/irrigation-controller.log
+  

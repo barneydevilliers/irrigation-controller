@@ -6,26 +6,32 @@ import time
 import MySQLdb
 import sys
 from time import strftime
-
+import datetime
 
 activeProgramSequences = []
 
 verboseActive = False
-config = []
+config = None
 
+
+
+class Struct:
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
 
 def log(message):
+    global config
+
     logMessage = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " | " + str(message)
     print logMessage
-    logfile = open(logfilename, 'a')
+    logfile = open(config.logFileName, 'a')
     logfile.write(logMessage + "\n")
     logfile.close()
 
 
 def verboseLog(message):
     global verboseActive
-    if verboseActive:
-        # only print to stdout and log file if verbose has been turned on
+    if verboseActive: # only print to stdout and log file if verbose has been turned on
         log(message)
 
 
@@ -54,17 +60,27 @@ def parseArgumentsAndLoadConfig():
 
     configFile = open(configFileName)
     global config
-    config = yaml.safe_load(configFile)
+    configDict = yaml.safe_load(configFile)
     configFile.close()
+    config = Struct(**configDict)
 
+    welcomeString = "Starting Irrigation Controller in "
+    if consoleMode:
+        welcomeString += "console mode"
+    else:
+        welcomeString += "forked service"
+    if verboseActive:
+        welcomeString += " with verbose logging"
+    log(welcomeString)
 
+    log("Parsed the configuration in " + configFileName + " as " + str(configDict))
 
 def start(lineid):
-    print "starting " + str(lineid)
+    log("starting " + str(lineid))
 
 
 def stop(lineid):
-    print "stopping " + str(lineid)
+    log("stopping " + str(lineid))
 
 def getDatabaseConnection():
     database = MySQLdb.connect("farmserver", "root", "root", "irrigation")
@@ -173,7 +189,7 @@ def main():
         #At each interval we also check if there are new program sequences we need to start
         database = getDatabaseConnection()
         for programsequenceinfo in checkforstarts(database):
-            print "Starting Program sequence : " + str(programsequenceinfo)
+            log ("Starting Program sequence : " + str(programsequenceinfo))
             activeProgramSequences.append(ProgramSequence(programsequenceinfo[0], database))
 
 
