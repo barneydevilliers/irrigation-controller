@@ -2,10 +2,10 @@
 
 set -e
 
+GIT_REVISION_COUNT=$(git rev-list HEAD --count)
+GIT_COMMIT_HASH=$(git rev-parse --short HEAD)
 BASE_FOLDER=$(pwd)
-FULL_NAME="irrigation-controller_1.0-1"
-
-
+FULL_NAME="irrigation-controller_1.0-"$GIT_REVISION_COUNT"."$GIT_COMMIT_HASH
 
 #make sure the target package folder is removed
 rm -rf $FULL_NAME
