@@ -2,7 +2,7 @@ Package: irrigation-controller
 Version: 1.0-1
 Section: base
 Priority: optional
-Architecture: noarch
+Architecture: all
 Depends: python,  python-yaml (>= 3.11)
 Maintainer: Barney de Villiers <barney.devilliers@gmail.com>
 Description: Irrigation Controller
