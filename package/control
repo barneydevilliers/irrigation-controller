@@ -1,0 +1,10 @@
+Package: irrigation-controller
+Version: 1.0-1
+Section: base
+Priority: optional
+Architecture: noarch
+Depends: python,  python-yaml (>= 3.11)
+Maintainer: Barney de Villiers <barney.devilliers@gmail.com>
+Description: Irrigation Controller
+ Python based irrigation controller service and server
+ to controll gpios on a Raspberry pi

@@ -82,6 +82,9 @@ def start(lineid):
 def stop(lineid):
     log("stopping " + str(lineid))
 
+def commit():
+    log("commit")
+
 def getDatabaseConnection():
     global config
     database = MySQLdb.connect(config.database['host'], config.database['username'], config.database['password'], "irrigation")
@@ -109,7 +112,7 @@ class ProgramSequence:
                 #else move to the next item
                 self.currentItem += 1
 
-        #If we have a valid line to run in the sequence, initiate it.
+        #If we have a new valid line to run in the sequence, initiate it.
         if self.activeProgramSequence:
             start(self.sequence[self.currentItem][0])
             self.currentItemStartTime = int(time.time())
@@ -129,16 +132,17 @@ class ProgramSequence:
 
         #Find the first valid line to try and run
         self.findAndStartNextValidLine(-1) #Minus 1 means we need to traverse the whole list.
+        commit()
 
     def active(self):
         return self.activeProgramSequence
 
     def everyMinuteHousekeeping(self):
-        print "housekeeping to check if we should keep on with this line or move to the next or exit"
         if self.active() and ((self.currentItemStartTime + self.sequence[self.currentItem][1]) > int(time.time())):
             #the current line item has expired.  Time to move to the next
+            stop(self.sequence[self.currentItem][0])
             self.findAndStartNextValidLine(self.currentItem)
-            
+            commit()
             
 
 
