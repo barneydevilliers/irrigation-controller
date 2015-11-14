@@ -1,12 +1,62 @@
 #!/usr/bin/python
 
 import argparse
+import yaml
 import time
 import MySQLdb
+import sys
 from time import strftime
 
 
 activeProgramSequences = []
+
+verboseActive = False
+config = []
+
+
+def log(message):
+    logMessage = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " | " + str(message)
+    print logMessage
+    logfile = open(logfilename, 'a')
+    logfile.write(logMessage + "\n")
+    logfile.close()
+
+
+def verboseLog(message):
+    global verboseActive
+    if verboseActive:
+        # only print to stdout and log file if verbose has been turned on
+        log(message)
+
+
+def parseArgumentsAndLoadConfig():
+    parser = argparse.ArgumentParser(description='Irrigation Controller Service')
+
+    parser.add_argument('--configfile', nargs=1,        help='configuration file to use', default=['/etc/irrigation-controller.yaml'])
+    parser.add_argument('--console',    action='count', help='run service in console instead of forked service')
+    parser.add_argument('--verbose',    action='count', help='provide verbose debugging')
+
+    args = parser.parse_args()
+
+    configFileName = args.configfile[0]
+
+    global consoleMode
+    if (args.verbose > 0):
+        consoleMode = True
+    else:
+        consoleMode = False
+
+    global verboseActive
+    if (args.verbose > 0):
+        verboseActive = True
+    else:
+        verboseActive = False
+
+    configFile = open(configFileName)
+    global config
+    config = yaml.safe_load(configFile)
+    configFile.close()
+
 
 
 def start(lineid):
@@ -22,6 +72,7 @@ def getDatabaseConnection():
 
 class ProgramSequence:
 
+    description = ""
     activeProgramSequence = False
     sequence = []
     currentItem = 0
@@ -53,6 +104,12 @@ class ProgramSequence:
         cursor.execute(select)
         self.sequence = cursor.fetchall()
 
+        #Find and set the program sequence description
+        select = "SELECT description FROM programs WHERE id=" + str(programid)
+        cursor = database.cursor()
+        cursor.execute(select)
+        self.description = cursor.fetchall()[0]
+
         #Find the first valid line to try and run
         self.findAndStartNextValidLine(-1) #Minus 1 means we need to traverse the whole list.
 
@@ -82,12 +139,7 @@ def checkforstarts(database):
     else:
         evenDaySearchString = " AND ( (starts.days = 'even') OR (starts.days = 'all') )"
 
-    overrideTime = "06:00"
-    print "Detecting current time as " + currentTime + " but using " + overrideTime + " instead for debugging"
-    currentTime = overrideTime
-
     selectStatement = "SELECT programid FROM starts WHERE starts.timeofday='" + currentTime + "'" + evenDaySearchString
-    print selectStatement
 
     cursor = database.cursor()
     cursor.execute(selectStatement)
@@ -97,25 +149,36 @@ def checkforstarts(database):
 
 
 
-while True:
-    #sleep until the next interval (in seconds)
-    checkInterval = 5.0
-    time.sleep(checkInterval - ((int(time.time()) % checkInterval)))
+
+
+
+def main():
+    parseArgumentsAndLoadConfig()
+
+    while True:
+        #sleep until the next interval (in seconds)
+        checkInterval = 5.0
+        time.sleep(checkInterval - ((int(time.time()) % checkInterval)))
     
-    #Get a new database connection we will use for this interval
-    database = getDatabaseConnection()
+        #Get a new database connection we will use for this interval
+        database = getDatabaseConnection()
 
-    #At each interval we iterate through any active program sequence and allow it to do housekeeping
-    for programSequence in activeProgramSequences:
-        programSequence.everyMinuteHousekeeping()
+        #At each interval we iterate through any active program sequence and allow it to do housekeeping
+        for programSequence in activeProgramSequences:
+            programSequence.everyMinuteHousekeeping()
 
-    #Remove any program sequence that is not active anymore from the list (finished the sequence)
-    activeProgramSequences[:] = [item for item in activeProgramSequences if item.active()]
+        #Remove any program sequence that is not active anymore from the list (finished the sequence)
+        activeProgramSequences[:] = [item for item in activeProgramSequences if item.active()]
 
-    #At each interval we also check if there are new program sequences we need to start
-    database = getDatabaseConnection()
-    for programsequenceinfo in checkforstarts(database):
-        print "Starting Program sequence : " + str(programsequenceinfo)
-        activeProgramSequences.append(ProgramSequence(programsequenceinfo[0], database))
+        #At each interval we also check if there are new program sequences we need to start
+        database = getDatabaseConnection()
+        for programsequenceinfo in checkforstarts(database):
+            print "Starting Program sequence : " + str(programsequenceinfo)
+            activeProgramSequences.append(ProgramSequence(programsequenceinfo[0], database))
 
+
+
+
+if __name__ == '__main__':
+    main()
 
