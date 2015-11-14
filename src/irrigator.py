@@ -83,7 +83,8 @@ def stop(lineid):
     log("stopping " + str(lineid))
 
 def getDatabaseConnection():
-    database = MySQLdb.connect("farmserver", "root", "root", "irrigation")
+    global config
+    database = MySQLdb.connect(config.database['host'], config.database['username'], config.database['password'], "irrigation")
     return database
 
 class ProgramSequence:
@@ -172,8 +173,8 @@ def main():
     parseArgumentsAndLoadConfig()
 
     while True:
-        #sleep until the next interval (in seconds)
-        checkInterval = 5.0
+        #sleep until the next minute boundary
+        checkInterval = 60.0 #in seconds
         time.sleep(checkInterval - ((int(time.time()) % checkInterval)))
     
         #Get a new database connection we will use for this interval
