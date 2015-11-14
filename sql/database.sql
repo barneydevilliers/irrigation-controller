@@ -16,6 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `linedependencies`
+--
+
+DROP TABLE IF EXISTS `linedependencies`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `linedependencies` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `lineid` int(11) NOT NULL,
+  `dependonid` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`lineid`,`dependonid`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `linedependencies`
+--
+
+LOCK TABLES `linedependencies` WRITE;
+/*!40000 ALTER TABLE `linedependencies` DISABLE KEYS */;
+INSERT INTO `linedependencies` VALUES (1,1,6),(2,2,6),(3,3,6),(4,4,6),(5,5,6);
+/*!40000 ALTER TABLE `linedependencies` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `lines`
 --
 
@@ -130,4 +156,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-11-12 20:41:02
+-- Dump completed on 2015-11-14  6:58:25
