@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import argparse
 import yaml
 import time
 import MySQLdb
@@ -8,6 +7,8 @@ import sys
 from time import strftime
 import datetime
 from daemon import runner
+import signal
+
 
 activeProgramSequences = []
 
@@ -127,15 +128,28 @@ class ProgramSequence:
             stop(self.sequence[self.currentItem][0])
             self.findAndStartNextValidLine(self.currentItem)
             commit()
-            
 
+    def start(line):
+        #first we need to find out any dependency lines this line has
+        select = "SELECT dependonid FROM irrigation.linedependencies WHERE lineid=" + str(line)
+        cursor = database.cursor()
+        cursor.execute(select)
+        linesToStart = cursor.fetchall()
+        
+        #add this line to the list
+        linesToStart.append(line)
+
+        log('Starting lines ' + str(linesToStart))
+
+    def stop(line):
+        log('stopping')
+  #  SELECT * FROM irrigation.linedependencies;
 
 
 def checkforstarts(database):
 
     #Get current time
     currentTime = strftime("%H:%M", time.localtime())
-    print currentTime
 
     #Get even/odd day
     dayOfMonth = time.localtime(time.time())[2]
@@ -155,11 +169,17 @@ def checkforstarts(database):
 
 
 
-
+def handleSigTERM(signum, stack):
+    log('SIGTERM received. TODO Stopping all lines')
+    exit(0)
 
 def main():
 
     loadConfig()
+
+
+    #install signal handler for SIGTERM
+    signal.signal(signal.SIGTERM, handleSigTERM)
 
     while True:
         #sleep until the next minute boundary
@@ -195,6 +215,7 @@ class ServiceDaemon():
 
     def run(self):
         main()
+
 
 
 if __name__ == '__main__':
