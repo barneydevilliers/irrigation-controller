@@ -77,11 +77,12 @@ def getDatabaseConnection():
 
 class ProgramSequence:
 
-    description = ""
+    description = "no-program-description"
     activeProgramSequence = False
     sequence = []
     currentValve = 0
-    currentValveStartTime = 0
+    currentValveStopTime = 0
+    runningValveList = []
 
     def findAndStartNextValidValveRun(self,searchFromCurrentValveRun):
         listStartOfSearchIndex = searchFromCurrentValveRun + 1
@@ -98,9 +99,13 @@ class ProgramSequence:
                 self.currentValve += 1
 
         #If we have a new valid line to run in the sequence, initiate it.
-        if self.activeProgramSequence:
+        if self.activeProgramSequence:            
+            #Calculate and set the valve stop time on a minute boundary
+            currentTimeToTheSecond = int(time.time())
+            currentTimeToTheMinute = currentTimeToTheSecond - (currentTimeToTheSecond % 60)
+            self.currentValveStopTime = currentTimeToTheMinute + (self.sequence[self.currentValve][1] * 60)
+            #start the valve
             start(self.sequence[self.currentValve][0])
-            self.currentValveStartTime = int(time.time())
 
     def __init__(self,programid,database):
         #Populate the sequence from the database
@@ -113,8 +118,13 @@ class ProgramSequence:
         select = "SELECT description FROM programs WHERE id=" + str(programid)
         cursor = database.cursor()
         cursor.execute(select)
-        self.description = cursor.fetchall()[0]
+        descriptionQueryResult = cursor.fetchall()
 
+        if len(descriptionQueryResult) > 0:
+            self.description = descriptionQueryResult[0][0]
+
+        log("Starting " + self.description)
+        
         #Find the first valid line to try and run
         self.findAndStartNextValidValveRun(-1) #Minus 1 means we need to traverse the whole list.
         commit()
@@ -123,21 +133,25 @@ class ProgramSequence:
         return self.activeProgramSequence
 
     def everyMinuteHousekeeping(self):
-        if self.active() and ((self.currentValveStartTime + self.sequence[self.currentValve][1]) > int(time.time())):
+        print "timeNow=" + str(int(time.time()))
+        print "active=" + str(self.active())
+        print "self.currentValveStopTime=" + str(self.currentValveStopTime)
+        print "self.currentValve=" + str(self.currentValve)
+        if self.active() and (self.currentValveStopTime <= int(time.time())):
             #the current line item has expired.  Time to move to the next
             stop(self.sequence[self.currentValve][0])
             self.findAndStartNextValidValveRun(self.currentValve)
             commit()
 
     def start(valve):
-        #first we need to find out any dependency lines this line has
+        #first we need to find any valves this valve is dependent on
         select = "SELECT dependonvalveid FROM irrigation.valvedependencies WHERE valveid=" + str(valve)
         cursor = database.cursor()
         cursor.execute(select)
-        valvesToStart = cursor.fetchall()
+        runningValveList = cursor.fetchall()
         
-        #add this line to the list
-        valvesToStart.append(line)
+        #add this valve to the list of it's dependencies to get a complete list of all the valves that needs to turn on
+        runningValveList.append(valve)
 
         log('Starting valves ' + str(valvesToStart))
 
