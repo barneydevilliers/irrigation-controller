@@ -60,12 +60,12 @@ def loadConfig():
 
     log("Parsed the configuration in " + configFileName + " as " + str(configDict))
 
-def start(lineid):
-    log("starting " + str(lineid))
+def start(valveid):
+    log("starting " + str(valveid))
 
 
-def stop(lineid):
-    log("stopping " + str(lineid))
+def stop(valveid):
+    log("stopping " + str(valveid))
 
 def commit():
     log("commit")
@@ -80,31 +80,31 @@ class ProgramSequence:
     description = ""
     activeProgramSequence = False
     sequence = []
-    currentItem = 0
-    currentItemStartTime = 0
+    currentValve = 0
+    currentValveStartTime = 0
 
-    def findAndStartNextValidLine(self,searchFromCurrentItem):
-        listStartOfSearchIndex = searchFromCurrentItem + 1
+    def findAndStartNextValidValveRun(self,searchFromCurrentValveRun):
+        listStartOfSearchIndex = searchFromCurrentValveRun + 1
         self.activeProgramSequence = False
-        for line in self.sequence[listStartOfSearchIndex:]:
+        for valveRun in self.sequence[listStartOfSearchIndex:]:
             #Check if the runtime of the current item is more than 0
-            if line[1] > 0:
+            if valveRun[1] > 0:
                 #Found the first valid line to run in the sequence.
                 #Set the program sequence as active and break from the search for the first item.
                 self.activeProgramSequence = True
                 break;
             else:
                 #else move to the next item
-                self.currentItem += 1
+                self.currentValve += 1
 
         #If we have a new valid line to run in the sequence, initiate it.
         if self.activeProgramSequence:
-            start(self.sequence[self.currentItem][0])
-            self.currentItemStartTime = int(time.time())
+            start(self.sequence[self.currentValve][0])
+            self.currentValveStartTime = int(time.time())
 
     def __init__(self,programid,database):
         #Populate the sequence from the database
-        select = "SELECT lineid, runtime FROM programsequence WHERE programid=" + str(programid) + " ORDER BY sequenceorder ASC"
+        select = "SELECT valveid, runtime FROM programsequence WHERE programid=" + str(programid) + " ORDER BY sequenceorder ASC"
         cursor = database.cursor()
         cursor.execute(select)
         self.sequence = cursor.fetchall()
@@ -116,34 +116,33 @@ class ProgramSequence:
         self.description = cursor.fetchall()[0]
 
         #Find the first valid line to try and run
-        self.findAndStartNextValidLine(-1) #Minus 1 means we need to traverse the whole list.
+        self.findAndStartNextValidValveRun(-1) #Minus 1 means we need to traverse the whole list.
         commit()
 
     def active(self):
         return self.activeProgramSequence
 
     def everyMinuteHousekeeping(self):
-        if self.active() and ((self.currentItemStartTime + self.sequence[self.currentItem][1]) > int(time.time())):
+        if self.active() and ((self.currentValveStartTime + self.sequence[self.currentValve][1]) > int(time.time())):
             #the current line item has expired.  Time to move to the next
-            stop(self.sequence[self.currentItem][0])
-            self.findAndStartNextValidLine(self.currentItem)
+            stop(self.sequence[self.currentValve][0])
+            self.findAndStartNextValidValveRun(self.currentValve)
             commit()
 
-    def start(line):
+    def start(valve):
         #first we need to find out any dependency lines this line has
-        select = "SELECT dependonid FROM irrigation.linedependencies WHERE lineid=" + str(line)
+        select = "SELECT dependonvalveid FROM irrigation.valvedependencies WHERE valveid=" + str(valve)
         cursor = database.cursor()
         cursor.execute(select)
-        linesToStart = cursor.fetchall()
+        valvesToStart = cursor.fetchall()
         
         #add this line to the list
-        linesToStart.append(line)
+        valvesToStart.append(line)
 
-        log('Starting lines ' + str(linesToStart))
+        log('Starting valves ' + str(valvesToStart))
 
-    def stop(line):
+    def stop(valve):
         log('stopping')
-  #  SELECT * FROM irrigation.linedependencies;
 
 
 def checkforstarts(database):
@@ -170,7 +169,7 @@ def checkforstarts(database):
 
 
 def handleSigTERM(signum, stack):
-    log('SIGTERM received. TODO Stopping all lines')
+    log('SIGTERM received. TODO Stopping all valves')
     exit(0)
 
 def main():
