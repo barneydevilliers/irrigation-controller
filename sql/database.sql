@@ -64,7 +64,7 @@ CREATE TABLE `programsequence` (
 
 LOCK TABLES `programsequence` WRITE;
 /*!40000 ALTER TABLE `programsequence` DISABLE KEYS */;
-INSERT INTO `programsequence` VALUES (1,1,1,1,40),(2,1,3,2,10),(3,1,4,3,10),(4,1,5,4,5),(5,2,1,1,5),(6,2,2,2,30),(7,2,3,3,10),(8,2,4,4,10),(9,2,5,5,5),(10,3,4,1,5),(11,4,2,1,1),(12,4,3,2,2),(13,0,4,3,1);
+INSERT INTO `programsequence` VALUES (1,1,1,1,40),(2,1,3,2,10),(3,1,4,3,10),(4,1,5,4,5),(5,2,1,1,5),(6,2,2,2,30),(7,2,3,3,10),(8,2,4,4,10),(9,2,5,5,5),(10,3,4,1,5),(11,4,2,1,1),(12,4,3,2,2),(13,4,4,3,1);
 /*!40000 ALTER TABLE `programsequence` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,7 +91,7 @@ CREATE TABLE `starts` (
 
 LOCK TABLES `starts` WRITE;
 /*!40000 ALTER TABLE `starts` DISABLE KEYS */;
-INSERT INTO `starts` VALUES (1,1,'06:00','odd'),(2,2,'06:00','even'),(3,3,'12:00','all'),(4,4,'09:01','all');
+INSERT INTO `starts` VALUES (1,1,'06:00','odd'),(2,2,'06:00','even'),(3,3,'12:00','all'),(4,4,'10:15','all');
 /*!40000 ALTER TABLE `starts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -156,4 +156,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-11-15  9:03:00
+-- Dump completed on 2015-11-15 10:19:15

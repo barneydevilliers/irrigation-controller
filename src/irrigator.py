@@ -84,28 +84,33 @@ class ProgramSequence:
     currentValveStopTime = 0
     runningValveList = []
 
-    def findAndStartNextValidValveRun(self,searchFromCurrentValveRun):
-        listStartOfSearchIndex = searchFromCurrentValveRun + 1
+    def findAndStartNextValidValveRun(self,indexToSearchFrom):
+        index = indexToSearchFrom
         self.activeProgramSequence = False
-        for valveRun in self.sequence[listStartOfSearchIndex:]:
+
+        if indexToSearchFrom >= len(self.sequence):
+            return #abort the search since we are already at the end of the sequence list
+
+        for valveRun in self.sequence[index:]:
             #Check if the runtime of the current item is more than 0
             if valveRun[1] > 0:
                 #Found the first valid line to run in the sequence.
                 #Set the program sequence as active and break from the search for the first item.
                 self.activeProgramSequence = True
                 break;
-            else:
-                #else move to the next item
-                self.currentValve += 1
+            #move to the next item if this item is not valid
+            index += 1
 
         #If we have a new valid line to run in the sequence, initiate it.
         if self.activeProgramSequence:            
+            self.currentValve = index
             #Calculate and set the valve stop time on a minute boundary
             currentTimeToTheSecond = int(time.time())
             currentTimeToTheMinute = currentTimeToTheSecond - (currentTimeToTheSecond % 60)
             self.currentValveStopTime = currentTimeToTheMinute + (self.sequence[self.currentValve][1] * 60)
             #start the valve
             start(self.sequence[self.currentValve][0])
+            
 
     def __init__(self,programid,database):
         #Populate the sequence from the database
@@ -126,21 +131,17 @@ class ProgramSequence:
         log("Starting " + self.description)
         
         #Find the first valid line to try and run
-        self.findAndStartNextValidValveRun(-1) #Minus 1 means we need to traverse the whole list.
+        self.findAndStartNextValidValveRun(0)
         commit()
 
     def active(self):
         return self.activeProgramSequence
 
     def everyMinuteHousekeeping(self):
-        print "timeNow=" + str(int(time.time()))
-        print "active=" + str(self.active())
-        print "self.currentValveStopTime=" + str(self.currentValveStopTime)
-        print "self.currentValve=" + str(self.currentValve)
         if self.active() and (self.currentValveStopTime <= int(time.time())):
             #the current line item has expired.  Time to move to the next
             stop(self.sequence[self.currentValve][0])
-            self.findAndStartNextValidValveRun(self.currentValve)
+            self.findAndStartNextValidValveRun(self.currentValve+1)
             commit()
 
     def start(valve):
