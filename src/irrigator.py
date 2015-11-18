@@ -9,6 +9,8 @@ import datetime
 from daemon import runner
 import signal
 
+import valves
+
 
 activeProgramSequences = []
 
@@ -194,9 +196,7 @@ def handleSigTERM(signum, stack):
     exit(0)
 
 def main():
-
     loadConfig()
-
 
     #install signal handler for SIGTERM
     signal.signal(signal.SIGTERM, handleSigTERM)
@@ -222,9 +222,6 @@ def main():
             log ("Starting Program sequence : " + str(programsequenceinfo))
             activeProgramSequences.append(ProgramSequence(programsequenceinfo[0], database))
 
-
-
-
 class ServiceDaemon():
     def __init__(self):
         self.stdin_path = '/dev/null'
@@ -236,10 +233,7 @@ class ServiceDaemon():
     def run(self):
         main()
 
-
-
 if __name__ == '__main__':
-
     if (len(sys.argv) > 1):
         if 'console' == sys.argv[1]:
             main()
@@ -250,6 +244,3 @@ if __name__ == '__main__':
     else:
         print "Need an argument"
         exit(1)
-
-
-
