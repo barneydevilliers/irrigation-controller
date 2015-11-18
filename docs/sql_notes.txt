@@ -1,0 +1,6 @@
+
+Set start time to the next minute boundary
+
+SET @NEXT_MINUTE_TIME = ADDTIME(NOW(), '0 0:1:0.000000');
+SET @NEXT_MINUTE_TIME = TIME_FORMAT(@NEXT_MINUTE_TIME,'%H:%i');
+UPDATE irrigation.starts SET timeofday = @NEXT_MINUTE_TIME WHERE id = '4';
