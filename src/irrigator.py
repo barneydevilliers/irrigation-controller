@@ -84,7 +84,7 @@ class ProgramSequence:
     currentValveStopTime = 0
     runningValveList = []
 
-    def findAndStartNextValidValveRun(self,indexToSearchFrom):
+    def findAndStartNextValidValveRun(self,indexToSearchFrom,database):
         index = indexToSearchFrom
         self.activeProgramSequence = False
 
@@ -109,7 +109,7 @@ class ProgramSequence:
             currentTimeToTheMinute = currentTimeToTheSecond - (currentTimeToTheSecond % 60)
             self.currentValveStopTime = currentTimeToTheMinute + (self.sequence[self.currentValve][1] * 60)
             #start the valve
-            self.start(self.sequence[self.currentValve][0])
+            self.start(self.sequence[self.currentValve][0],database)
             
 
     def __init__(self,programid,database):
@@ -117,49 +117,53 @@ class ProgramSequence:
         select = "SELECT valveid, runtime FROM programsequence WHERE programid=" + str(programid) + " ORDER BY sequenceorder ASC"
         cursor = database.cursor()
         cursor.execute(select)
-        self.sequence = cursor.fetchall()
+        self.sequence = list(cursor.fetchall())
 
         #Find and set the program sequence description
         select = "SELECT description FROM programs WHERE id=" + str(programid)
         cursor = database.cursor()
         cursor.execute(select)
-        descriptionQueryResult = cursor.fetchall()
+        descriptionQueryResult = list(cursor.fetchall())
         if len(descriptionQueryResult) > 0:
             self.description = descriptionQueryResult[0][0]
-        log("Starting " + self.description)
-        
-        #Iterate through all the valves in the sequence and determine any dependencies
-        for item in self.sequence:
-            select = "SELECT dependonvalveid FROM irrigation.valvedependencies WHERE valveid=" + str(item[0])
-            cursor = database.cursor()
-            cursor.execute(select)
-            valveList = cursor.fetchall()
-            print "valveList=" + str(valveList)
-            #add this valve to the list of it's dependencies to get a complete list of all the valves that needs to turn on
-            valveList.append(valve)
-            item[2] = valveList #store the valve list in the sequence
+        log("Starting Program Sequence : " + self.description)
 
         print(str(self.sequence))
 
         #Find the first valid line to try and run
-        self.findAndStartNextValidValveRun(0)
+        self.findAndStartNextValidValveRun(0,database)
         commit()
 
     def active(self):
         return self.activeProgramSequence
 
-    def everyMinuteHousekeeping(self):
+    def getDependencyValves(self,valve,database):
+        select = "SELECT dependonvalveid FROM irrigation.valvedependencies WHERE valveid=" + str(valve)
+        cursor = database.cursor()
+        cursor.execute(select)
+        valveDependancyTuples = cursor.fetchall()
+        valveDependancyList = []
+        #add this valve to the list of it's dependencies to get a complete list of all the valves that needs to turn on
+        valveDependancyList.append(valve)
+        #add dependencies
+        for dependency in valveDependancyTuples:
+            valveDependancyList.append(dependency[0])
+        return valveDependancyList
+
+    def everyMinuteHousekeeping(self,database):
         if self.active() and (self.currentValveStopTime <= int(time.time())):
             #the current line item has expired.  Time to move to the next
-            self.stop(self.sequence[self.currentValve][0])
-            self.findAndStartNextValidValveRun(self.currentValve+1)
+            self.stop(self.sequence[self.currentValve][0],database)
+            self.findAndStartNextValidValveRun(self.currentValve+1,database)
             commit()
 
-    def start(valve):
+    def start(self,valve,database):
+        valvesToStart = self.getDependencyValves(valve, database)
         log('Starting valves ' + str(valvesToStart))
 
-    def stop(valve):
-        log('stopping')
+    def stop(self,valve,database):
+        valvesToStop = self.getDependencyValves(valve, database)
+        log('Stopping valves ' + str(valvesToStop))
 
 
 def checkforstarts(database):
@@ -207,7 +211,7 @@ def main():
 
         #At each interval we iterate through any active program sequence and allow it to do housekeeping
         for programSequence in activeProgramSequences:
-            programSequence.everyMinuteHousekeeping()
+            programSequence.everyMinuteHousekeeping(database)
 
         #Remove any program sequence that is not active anymore from the list (finished the sequence)
         activeProgramSequences[:] = [item for item in activeProgramSequences if item.active()]
@@ -236,11 +240,16 @@ class ServiceDaemon():
 
 if __name__ == '__main__':
 
-    if 'console' == sys.argv[1]:
-        main()
+    if (len(sys.argv) > 1):
+        if 'console' == sys.argv[1]:
+            main()
+        else:
+            daemon = ServiceDaemon()
+            daemon_runner = runner.DaemonRunner(daemon)
+            daemon_runner.do_action()
     else:
-	daemon = ServiceDaemon()
-        daemon_runner = runner.DaemonRunner(daemon)
-        daemon_runner.do_action()
+        print "Need an argument"
+        exit(1)
+
 
 
