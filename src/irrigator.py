@@ -9,14 +9,14 @@ import datetime
 from daemon import runner
 import signal
 
-import valves
+from valves import valvemanager
 
 
 activeProgramSequences = []
-
+allValvesList = []
 verboseActive = False
 config = None
-
+valveManager = None
 
 
 class Struct:
@@ -162,44 +162,60 @@ class ProgramSequence:
     def start(self,valve,database):
         valvesToStart = self.getDependencyValves(valve, database)
         log('Starting valves ' + str(valvesToStart))
+        global valveManager
+        valveManager.openList(valvesToStart)
 
     def stop(self,valve,database):
-        valvesToStop = self.getDependencyValves(valve, database)
-        log('Stopping valves ' + str(valvesToStop))
+        valvesToClose = self.getDependencyValves(valve, database)
+        log('Stopping valves ' + str(valvesToClose))
+        global valveManager
+        valveManager.closeList(valvesToClose)
 
-
-def checkforstarts(database):
+def checkForStarts(database):
 
     #Get current time
     currentTime = strftime("%H:%M", time.localtime())
-
-    #Get even/odd day
+    #Get even/odd/all day
     dayOfMonth = time.localtime(time.time())[2]
     if (dayOfMonth%2 == 1):
         evenDaySearchString = " AND ( (starts.days = 'odd') OR (starts.days = 'all') )"
     else:
         evenDaySearchString = " AND ( (starts.days = 'even') OR (starts.days = 'all') )"
-
     selectStatement = "SELECT programid FROM starts WHERE starts.timeofday='" + currentTime + "'" + evenDaySearchString
-
     cursor = database.cursor()
     cursor.execute(selectStatement)
-    results = cursor.fetchall()
+    return cursor.fetchall()
 
-    return results
+def getAllValves(database):
+    select = "SELECT id, interface FROM irrigation.valves"
+    cursor = database.cursor()
+    cursor.execute(select)
+    valveInfos = cursor.fetchall()
+    valvesDict = dict()
+    for valveInfo in valveInfos:
+        valvesDict[valveInfo[0]] = valveInfo[1] #map id to interface
+    return valvesDict
 
-
-
-
-def handleSigTERM(signum, stack):
-    log('SIGTERM received. TODO Stopping all valves')
+def handleSignal(signum, stack):
+    global allValvesList
+    global valveManager
+    log('SIGTERM received. closing all valves : ' + str(allValvesList))
+    valveManager.closeList(allValvesList)
     exit(0)
 
 def main():
     loadConfig()
 
     #install signal handler for SIGTERM
-    signal.signal(signal.SIGTERM, handleSigTERM)
+    signal.signal(signal.SIGTERM, handleSignal)
+
+    #get and initialize the valvemanager to reset/close all valves on startup
+    database = getDatabaseConnection()
+    global allValvesList
+    allValvesList = getAllValves(database)
+    global valveManager
+    valveManager = valvemanager(allValvesList)
+    database.close()    
 
     while True:
         #sleep until the next minute boundary
@@ -218,9 +234,11 @@ def main():
 
         #At each interval we also check if there are new program sequences we need to start
         database = getDatabaseConnection()
-        for programsequenceinfo in checkforstarts(database):
+        for programsequenceinfo in checkForStarts(database):
             log ("Starting Program sequence : " + str(programsequenceinfo))
             activeProgramSequences.append(ProgramSequence(programsequenceinfo[0], database))
+
+        database.close()
 
 class ServiceDaemon():
     def __init__(self):
