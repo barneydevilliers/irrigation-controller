@@ -53,8 +53,9 @@ class valvemanager:
         for key, value in self.valvesStateDict.iteritems():
             if "closed" == str(self.valvesStateDict[key]):
                 self.log("valvemanager : commit : close " + str(key) + ": interface " + str(self.valvesInterfaceDict[key]) + ": state " + str(self.valvesStateDict[key]))
+                self.setValue(self.valvesInterfaceDict[key],"0")
             if "open" == str(self.valvesStateDict[key]):
                 self.log("valvemanager : commit : open " + str(key) + ": interface " + str(self.valvesInterfaceDict[key]) + ": state " + str(self.valvesStateDict[key]))
-            
+                self.setValue(self.valvesInterfaceDict[key],"1")
 
 
