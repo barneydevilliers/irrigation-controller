@@ -1,36 +1,39 @@
 
 class valvemanager:
 
-    valveToInterfaceDict = dict()
-    interfaceStateDict   = dict()
-    
-    def __init__(self,valveToInterfaceDict):
-        print "valvemanager: init with " + str(valveToInterfaceDict)
-        self.valveToInterfaceDict = valveToInterfaceDict
-        for key in self.valveToInterfaceDict:
-            print str(key) + ":" + str(valveToInterfaceDict[key])
-            self.interfaceStateDict[self.valveToInterfaceDict[key]] = "close"
+    valvesInterfaceDict = dict()
+    valvesStateDict   = dict()
+    log = None   
+ 
+    def __init__(self,valvesInterfaceDict,logger):
+        self.log = logger
+        self.log("valvemanager: init with " + str(valvesInterfaceDict))
+        self.valvesInterfaceDict = valvesInterfaceDict
+        for key in self.valvesInterfaceDict:
+            self.valvesStateDict[self.valvesInterfaceDict[key]] = "closed"
+        #commit the current state to hardware interface
+        self.commit()
 
     def closeList(self,valveList):
-        print "valvemanager: close list"
         for valve in valveList:
             self.close(valve)
 
     def openList(self,valveList):
-        print "valvemanager: open list"
         for valve in valveList:
             self.open(valve)
 
     def close(self,valve):
-        print "valvemanager: close valve no " + valve + " at interface no " + self.valveToInterfaceDict[valve]
-        self.interfaceStateDict[self.valveToInterfaceDict[valve]] = "close"
+        self.valvesStateDict[self.valvesInterfaceDict[valve]] = "closed"
 
     def open(self,valve):
-        print "valvemanager: open valve no " + valve + " at interface no " + self.valveToInterfaceDict[valve]
-        self.interfaceStateDict[self.valveToInterfaceDict[valve]] = "open"
+        self.valvesStateDict[self.valvesInterfaceDict[valve]] = "open"
 
     def commit(self):
-        print "valvemanager: commit valves state"
-        for key in self.interfaceStateDict:
-            print "valvemanager : commit : " + key + ":" + self.interfaceStateDict[key]
+        for key in self.valvesStateDict:
+            if "closed" == str(self.valvesStateDict[key]):
+                self.log("valvemanager : commit : close " + str(key) + ": interface " + str(self.valvesInterfaceDict[int(key)]) + ": state " + str(self.valvesStateDict[key]))
+            if "open" == str(self.valvesStateDict[key]):
+                self.log("valvemanager : commit : open " + str(key) + ": interface " + str(self.valvesInterfaceDict[int(key)]) + ": state " + str(self.valvesStateDict[key]))
+            
+
 

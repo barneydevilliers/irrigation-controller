@@ -32,6 +32,8 @@ def log(message):
     logfile.write(logMessage + "\n")
     logfile.close()
 
+def logger(message):
+    log(message)
 
 def verboseLog(message):
     global verboseActive
@@ -62,15 +64,21 @@ def loadConfig():
 
     log("Parsed the configuration in " + configFileName + " as " + str(configDict))
 
-def start(valveid):
-    log("starting " + str(valveid))
+def openValvesList(valvesList):
+    log('Opening valves ' + str(valvesList))
+    global valveManager
+    valveManager.openList(valvesList)
 
-
-def stop(valveid):
-    log("stopping " + str(valveid))
+def closeValvesList(valvesList):
+    log('Closing valves ' + str(valvesList))
+    global valveManager
+    valveManager.closeList(valvesList)
 
 def commit():
     log("commit")
+    global valveManager
+    valveManager.commit()
+
 
 def getDatabaseConnection():
     global config
@@ -130,8 +138,6 @@ class ProgramSequence:
             self.description = descriptionQueryResult[0][0]
         log("Starting Program Sequence : " + self.description)
 
-        print(str(self.sequence))
-
         #Find the first valid line to try and run
         self.findAndStartNextValidValveRun(0,database)
         commit()
@@ -161,15 +167,11 @@ class ProgramSequence:
 
     def start(self,valve,database):
         valvesToStart = self.getDependencyValves(valve, database)
-        log('Starting valves ' + str(valvesToStart))
-        global valveManager
-        valveManager.openList(valvesToStart)
+        openValvesList(valvesToStart)
 
     def stop(self,valve,database):
         valvesToClose = self.getDependencyValves(valve, database)
-        log('Stopping valves ' + str(valvesToClose))
-        global valveManager
-        valveManager.closeList(valvesToClose)
+        closeValvesList(valvesToClose)
 
 def checkForStarts(database):
 
@@ -214,7 +216,7 @@ def main():
     global allValvesList
     allValvesList = getAllValves(database)
     global valveManager
-    valveManager = valvemanager(allValvesList)
+    valveManager = valvemanager(allValvesList,logger)
     database.close()    
 
     while True:
