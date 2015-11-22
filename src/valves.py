@@ -1,16 +1,37 @@
+import os
 
 class valvemanager:
 
     valvesInterfaceDict = dict()
     valvesStateDict   = dict()
     log = None   
+
+    def exportGpio(self,gpio):
+        os.system("echo " + str(gpio) + " > /sys/class/gpio/export")
+
+    def setOutputDirections(self, gpio):
+        os.system("echo out > /sys/class/gpio/gpio" + str(gpio) + "/direction")
  
+    def setValue(self, gpio, value):
+        os.system("echo " + str(value) + " > /sys/class/gpio/gpio" + str(gpio) + "/value")
+
     def __init__(self,valvesInterfaceDict,logger):
         self.log = logger
         self.log("valvemanager: init with " + str(valvesInterfaceDict))
         self.valvesInterfaceDict = valvesInterfaceDict
-        for key in self.valvesInterfaceDict:
-            self.valvesStateDict[self.valvesInterfaceDict[key]] = "closed"
+        #initialize and set the initial logical state of the interface
+        for valve, interface in self.valvesInterfaceDict.iteritems():
+            print str(valve) + ":" + str(interface)
+            self.valvesStateDict[valve] = "closed"
+        #export the gpios to make them accessible in userspace
+        for valve, interface in self.valvesInterfaceDict.iteritems():
+            print interface
+            self.exportGpio(interface)
+        #set the output and initial value of each interface
+        for valve, interface in self.valvesInterfaceDict.iteritems():
+            print interface
+            self.setOutputDirections(interface)
+            self.setValue(interface, 0)
         #commit the current state to hardware interface
         self.commit()
 
@@ -23,17 +44,17 @@ class valvemanager:
             self.open(valve)
 
     def close(self,valve):
-        self.valvesStateDict[self.valvesInterfaceDict[valve]] = "closed"
+        self.valvesStateDict[valve] = "closed"
 
     def open(self,valve):
-        self.valvesStateDict[self.valvesInterfaceDict[valve]] = "open"
+        self.valvesStateDict[valve] = "open"
 
     def commit(self):
-        for key in self.valvesStateDict:
+        for key, value in self.valvesStateDict.iteritems():
             if "closed" == str(self.valvesStateDict[key]):
-                self.log("valvemanager : commit : close " + str(key) + ": interface " + str(self.valvesInterfaceDict[int(key)]) + ": state " + str(self.valvesStateDict[key]))
+                self.log("valvemanager : commit : close " + str(key) + ": interface " + str(self.valvesInterfaceDict[key]) + ": state " + str(self.valvesStateDict[key]))
             if "open" == str(self.valvesStateDict[key]):
-                self.log("valvemanager : commit : open " + str(key) + ": interface " + str(self.valvesInterfaceDict[int(key)]) + ": state " + str(self.valvesStateDict[key]))
+                self.log("valvemanager : commit : open " + str(key) + ": interface " + str(self.valvesInterfaceDict[key]) + ": state " + str(self.valvesStateDict[key]))
             
 
 
