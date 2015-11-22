@@ -17,6 +17,7 @@ cd $FULL_NAME
 #create executables
 mkdir -p ./usr/bin/
 cp $BASE_FOLDER/../src/irrigator.py ./usr/bin/
+cp $BASE_FOLDER/../src/valves.py ./usr/bin/
 
 #create the init script
 mkdir -p ./etc/init.d/
