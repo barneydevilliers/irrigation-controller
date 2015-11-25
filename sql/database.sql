@@ -36,7 +36,7 @@ CREATE TABLE `programs` (
 
 LOCK TABLES `programs` WRITE;
 /*!40000 ALTER TABLE `programs` DISABLE KEYS */;
-INSERT INTO `programs` VALUES (1,'Odd Days Morning Program'),(2,'Even Days Morning Program'),(3,'Midday Nursery Program'),(4,'Test Program');
+INSERT INTO `programs` VALUES (1,'Odd Days Morning Program'),(2,'Even Days Morning Program'),(3,'Midday Nursery Program');
 /*!40000 ALTER TABLE `programs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -55,7 +55,7 @@ CREATE TABLE `programsequence` (
   `runtime` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -64,7 +64,7 @@ CREATE TABLE `programsequence` (
 
 LOCK TABLES `programsequence` WRITE;
 /*!40000 ALTER TABLE `programsequence` DISABLE KEYS */;
-INSERT INTO `programsequence` VALUES (1,1,1,1,40),(2,1,3,2,10),(3,1,4,3,10),(4,1,5,4,5),(5,2,1,1,5),(6,2,2,2,30),(7,2,3,3,10),(8,2,4,4,10),(9,2,5,5,5),(10,3,4,1,5),(11,4,2,1,1),(12,4,3,2,2),(13,4,4,3,1);
+INSERT INTO `programsequence` VALUES (1,1,3,1,40),(2,1,8,2,10),(3,1,6,3,10),(5,2,3,1,5),(6,2,4,2,30),(7,2,8,3,10),(8,2,6,4,10),(10,3,6,1,5);
 /*!40000 ALTER TABLE `programsequence` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,7 +91,7 @@ CREATE TABLE `starts` (
 
 LOCK TABLES `starts` WRITE;
 /*!40000 ALTER TABLE `starts` DISABLE KEYS */;
-INSERT INTO `starts` VALUES (1,1,'06:00','odd'),(2,2,'06:00','even'),(3,3,'12:00','all'),(4,4,'10:15','all');
+INSERT INTO `starts` VALUES (1,1,'06:00','odd'),(2,2,'06:00','even'),(3,3,'12:00','all');
 /*!40000 ALTER TABLE `starts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -108,7 +108,7 @@ CREATE TABLE `valvedependencies` (
   `dependonvalveid` int(11) NOT NULL,
   PRIMARY KEY (`id`,`valveid`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -117,7 +117,7 @@ CREATE TABLE `valvedependencies` (
 
 LOCK TABLES `valvedependencies` WRITE;
 /*!40000 ALTER TABLE `valvedependencies` DISABLE KEYS */;
-INSERT INTO `valvedependencies` VALUES (1,1,6),(2,2,6),(3,3,6),(4,4,6),(5,5,6);
+INSERT INTO `valvedependencies` VALUES (1,1,5),(2,2,5),(3,3,5),(4,4,5),(5,6,5),(6,7,5),(7,8,5);
 /*!40000 ALTER TABLE `valvedependencies` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -134,7 +134,7 @@ CREATE TABLE `valves` (
   `interface` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -143,7 +143,7 @@ CREATE TABLE `valves` (
 
 LOCK TABLES `valves` WRITE;
 /*!40000 ALTER TABLE `valves` DISABLE KEYS */;
-INSERT INTO `valves` VALUES (1,'Vegetable Garden','1'),(2,'Backyard','2'),(3,'Frontyard','3'),(4,'Greenhouse','4'),(5,'Watertank','5');
+INSERT INTO `valves` VALUES (1,'Unused','4'),(2,'Unused','18'),(3,'Vegetable Garden','17'),(4,'Backyard','27'),(5,'Wellpoint Pump','22'),(6,'Greenhouse','23'),(7,'Unused','25'),(8,'Frontyard','24');
 /*!40000 ALTER TABLE `valves` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -156,4 +156,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-11-15 10:19:15
+-- Dump completed on 2015-11-25 10:38:58
