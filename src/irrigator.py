@@ -8,6 +8,7 @@ from time import strftime
 import datetime
 from daemon import runner
 import signal
+from flask import Flask
 
 from valves import valvemanager
 
@@ -85,6 +86,42 @@ def getDatabaseConnection():
     database = MySQLdb.connect(config.database['host'], config.database['username'], config.database['password'], "irrigation")
     return database
 
+
+def getDependencyValves(valve,database):
+    select = "SELECT dependonvalveid FROM irrigation.valvedependencies WHERE valveid=" + str(valve)
+    cursor = database.cursor()
+    cursor.execute(select)
+    valveDependancyTuples = cursor.fetchall()
+    valveDependancyList = []
+    #add this valve to the list of it's dependencies to get a complete list of all the valves that needs to turn on
+    valveDependancyList.append(valve)
+    #add dependencies
+    for dependency in valveDependancyTuples:
+        valveDependancyList.append(dependency[0])
+    return valveDependancyList
+
+
+def getAllValves(database):
+    select = "SELECT id, interface FROM irrigation.valves"
+    cursor = database.cursor()
+    cursor.execute(select)
+    valveInfos = cursor.fetchall()
+    valvesDict = dict()
+    for valveInfo in valveInfos:
+        valvesDict[valveInfo[0]] = valveInfo[1] #map id to interface
+    return valvesDict
+
+def getAllValvesList(database):
+    select = "SELECT id FROM irrigation.valves"
+    cursor = database.cursor()
+    cursor.execute(select)
+    valveTuples = cursor.fetchall()
+    valvesList = []
+    for valve in valveTuples:
+        valvesList.append(valve[0])
+    return valvesList
+
+
 class ProgramSequence:
 
     description = "no-program-description"
@@ -145,19 +182,6 @@ class ProgramSequence:
     def active(self):
         return self.activeProgramSequence
 
-    def getDependencyValves(self,valve,database):
-        select = "SELECT dependonvalveid FROM irrigation.valvedependencies WHERE valveid=" + str(valve)
-        cursor = database.cursor()
-        cursor.execute(select)
-        valveDependancyTuples = cursor.fetchall()
-        valveDependancyList = []
-        #add this valve to the list of it's dependencies to get a complete list of all the valves that needs to turn on
-        valveDependancyList.append(valve)
-        #add dependencies
-        for dependency in valveDependancyTuples:
-            valveDependancyList.append(dependency[0])
-        return valveDependancyList
-
     def everyMinuteHousekeeping(self,database):
         if self.active() and (self.currentValveStopTime <= int(time.time())):
             #the current line item has expired.  Time to move to the next
@@ -166,11 +190,11 @@ class ProgramSequence:
             commit()
 
     def start(self,valve,database):
-        valvesToStart = self.getDependencyValves(valve, database)
+        valvesToStart = getDependencyValves(valve, database)
         openValvesList(valvesToStart)
 
     def stop(self,valve,database):
-        valvesToClose = self.getDependencyValves(valve, database)
+        valvesToClose = getDependencyValves(valve, database)
         closeValvesList(valvesToClose)
 
 def checkForStarts(database):
@@ -188,15 +212,6 @@ def checkForStarts(database):
     cursor.execute(selectStatement)
     return cursor.fetchall()
 
-def getAllValves(database):
-    select = "SELECT id, interface FROM irrigation.valves"
-    cursor = database.cursor()
-    cursor.execute(select)
-    valveInfos = cursor.fetchall()
-    valvesDict = dict()
-    for valveInfo in valveInfos:
-        valvesDict[valveInfo[0]] = valveInfo[1] #map id to interface
-    return valvesDict
 
 def handleSignal(signum, stack):
     global allValvesList
@@ -204,6 +219,31 @@ def handleSignal(signum, stack):
     log('SIGTERM received. closing all valves : ' + str(allValvesList))
     valveManager.closeList(allValvesList)
     exit(0)
+
+
+
+restWebApp = Flask(__name__)
+
+@restWebApp.route("/manual/open/<int:valveid>/<int:opentime>")
+def openValve(valveid,opentime):
+    log("Manual request to open valve id " + str(valveid) + " for " + str(opentime) + " minutes")
+    return "manual open of " + str(valveid) + " for " + str(opentime) + " minutes"
+
+@restWebApp.route("/manual/closeall")
+@restWebApp.route("/manual/close/<int:valveid>")
+def closeValve(valveid=None):
+    database = getDatabaseConnection()
+    valves = []
+    if valveid==None:
+        valves = getAllValvesList(database)
+        log("Manual request to close all valves")
+    else:
+        valves = getDependencyValves(valveid,database)
+        log("Manual request to close valve id")
+    
+    closeValvesList(valves)
+    return "Closing valves " + str(valves)
+
 
 def main():
     loadConfig()
@@ -218,6 +258,10 @@ def main():
     global valveManager
     valveManager = valvemanager(allValvesList,logger)
     database.close()    
+
+
+    #run the rest web app
+    restWebApp.run(debug=True, host='0.0.0.0')
 
     while True:
         #sleep until the next minute boundary
@@ -252,6 +296,9 @@ class ServiceDaemon():
 
     def run(self):
         main()
+
+
+
 
 if __name__ == '__main__':
     if (len(sys.argv) > 1):
