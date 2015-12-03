@@ -226,8 +226,12 @@ restWebApp = Flask(__name__)
 
 @restWebApp.route("/manual/open/<int:valveid>/<int:opentime>")
 def openValve(valveid,opentime):
-    log("Manual request to open valve id " + str(valveid) + " for " + str(opentime) + " minutes")
-    return "manual open of " + str(valveid) + " for " + str(opentime) + " minutes"
+    log("Manual request to open valve id " + str(valveid) + " for " + str(opentime) + " minutes (WARNING!!! NO auto closing after said minutes yet!!!")
+    database = getDatabaseConnection()
+    valves = getDependencyValves(valveid,database)
+    openValvesList(valves)
+    commit()
+    return "Manual request to open valve id " + str(valves) + " for " + str(opentime) + " minutes (WARNING!!! NO auto closing after said minutes yet!!!"
 
 @restWebApp.route("/manual/closeall")
 @restWebApp.route("/manual/close/<int:valveid>")
@@ -242,6 +246,7 @@ def closeValve(valveid=None):
         log("Manual request to close valve id")
     
     closeValvesList(valves)
+    commit()
     return "Closing valves " + str(valves)
 
 
