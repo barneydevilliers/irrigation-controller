@@ -21,15 +21,12 @@ class valvemanager:
         self.valvesInterfaceDict = valvesInterfaceDict
         #initialize and set the initial logical state of the interface
         for valve, interface in self.valvesInterfaceDict.iteritems():
-            print str(valve) + ":" + str(interface)
             self.valvesStateDict[valve] = "closed"
         #export the gpios to make them accessible in userspace
         for valve, interface in self.valvesInterfaceDict.iteritems():
-            print interface
             self.exportGpio(interface)
         #set the output and initial value of each interface
         for valve, interface in self.valvesInterfaceDict.iteritems():
-            print interface
             self.setOutputDirections(interface)
             self.setValue(interface, 0)
         #commit the current state to hardware interface
