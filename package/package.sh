@@ -7,6 +7,12 @@ GIT_COMMIT_HASH=$(git rev-parse --short HEAD)
 BASE_FOLDER=$(pwd)
 FULL_NAME="irrigation-controller_1.0-"$GIT_REVISION_COUNT"."$GIT_COMMIT_HASH
 
+#Remove all previous deb packages
+rm *.deb -f
+
+#Create the control file from the template
+cp control-template control
+
 #make sure the target package folder is removed
 rm -rf $FULL_NAME
 
