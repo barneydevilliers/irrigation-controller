@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+
+import thread
 import yaml
 import time
 import MySQLdb
@@ -250,24 +252,12 @@ def closeValve(valveid=None):
     return "Closing valves " + str(valves)
 
 
-def main():
-    loadConfig()
+def threadWebApp():
+    log("Starting the Web Application Thread")
+    restWebApp.run(debug=False, host='0.0.0.0')
 
-    #install signal handler for SIGTERM
-    signal.signal(signal.SIGTERM, handleSignal)
-
-    #get and initialize the valvemanager to reset/close all valves on startup
-    database = getDatabaseConnection()
-    global allValvesList
-    allValvesList = getAllValves(database)
-    global valveManager
-    valveManager = valvemanager(allValvesList,logger)
-    database.close()    
-
-
-    #run the rest web app
-    restWebApp.run(debug=True, host='0.0.0.0')
-
+def threadJobScheduler():
+    log("Starting the Job Scheduler Thread")
     while True:
         #sleep until the next minute boundary
         checkInterval = 60.0 #in seconds
@@ -302,6 +292,29 @@ class ServiceDaemon():
     def run(self):
         main()
 
+
+def main():
+    initialize()
+
+    thread.start_new_thread(threadWebApp,())
+    
+    #Start the job scheduler in the main parent thread
+    threadJobScheduler()
+
+def initialize():
+    #load config from etc
+    loadConfig()
+
+    #install signal handler for SIGTERM
+    signal.signal(signal.SIGTERM, handleSignal)
+
+    #get and initialize the valvemanager to reset/close all valves on startup
+    database = getDatabaseConnection()
+    global allValvesList
+    allValvesList = getAllValves(database)
+    global valveManager
+    valveManager = valvemanager(allValvesList,logger)
+    database.close()
 
 
 
