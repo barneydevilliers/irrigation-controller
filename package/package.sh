@@ -12,6 +12,7 @@ rm *.deb -f
 
 #Create the control file from the template
 cp control-template control
+echo "Version: 1.0."$GIT_REVISION_COUNT >> control
 
 #make sure the target package folder is removed
 rm -rf $FULL_NAME
