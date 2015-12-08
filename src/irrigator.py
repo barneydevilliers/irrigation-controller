@@ -10,8 +10,8 @@ from time import strftime
 import datetime
 from daemon import runner
 import signal
-from flask import Flask
-
+from flask import Flask, request, send_from_directory
+import json
 from valves import valvemanager
 
 
@@ -21,10 +21,6 @@ verboseActive = False
 config = None
 valveManager = None
 
-
-class Struct:
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
 
 def log(message):
     global config
@@ -43,6 +39,9 @@ def verboseLog(message):
     if verboseActive: # only print to stdout and log file if verbose has been turned on
         log(message)
 
+class Struct:
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
 
 def loadConfig():
 
@@ -224,9 +223,16 @@ def handleSignal(signum, stack):
 
 
 
-restWebApp = Flask(__name__)
+restWebApp = Flask(__name__, static_url_path='')
 
-@restWebApp.route("/manual/open/<int:valveid>/<int:opentime>")
+@restWebApp.route("/")
+def route():
+    print "main page static"
+    return restWebApp.send_static_file('index.html')
+
+
+
+@restWebApp.route("/api/open/<int:valveid>/<int:opentime>")
 def openValve(valveid,opentime):
     log("Manual request to open valve id " + str(valveid) + " for " + str(opentime) + " minutes (WARNING!!! NO auto closing after said minutes yet!!!")
     database = getDatabaseConnection()
@@ -235,26 +241,40 @@ def openValve(valveid,opentime):
     commit()
     return "Manual request to open valve id " + str(valves) + " for " + str(opentime) + " minutes (WARNING!!! NO auto closing after said minutes yet!!!"
 
-@restWebApp.route("/manual/closeall")
-@restWebApp.route("/manual/close/<int:valveid>")
+@restWebApp.route("/api/closeall")
+@restWebApp.route("/api/close/<int:valveid>")
 def closeValve(valveid=None):
     database = getDatabaseConnection()
+    
     valves = []
     if valveid==None:
         valves = getAllValvesList(database)
-        log("Manual request to close all valves")
+        log("Manual request to close all valves" + str(valves))
     else:
         valves = getDependencyValves(valveid,database)
-        log("Manual request to close valve id")
+        log("Manual request to close valve ids" + str(valves))
     
     closeValvesList(valves)
     commit()
     return "Closing valves " + str(valves)
 
+@restWebApp.route("/api/info/valves")
+def getAllValvesInfo():
+    database = getDatabaseConnection()
+    
+    select = "SELECT id, description FROM irrigation.valves"
+    cursor = database.cursor()
+    cursor.execute(select)
+    valveTuples = cursor.fetchall()
+    valvesDict = {}
+    for valve in valveTuples:
+        if valve[1] != "Unused":
+            valvesDict[valve[1]] = valve[0]
+    return json.dumps(valvesDict)
 
 def threadWebApp():
     log("Starting the Web Application Thread")
-    restWebApp.run(debug=False, host='0.0.0.0')
+    restWebApp.run(debug=True, host='0.0.0.0')
 
 def threadJobScheduler():
     log("Starting the Job Scheduler Thread")
@@ -295,11 +315,11 @@ class ServiceDaemon():
 
 def main():
     initialize()
-
-    thread.start_new_thread(threadWebApp,())
     
     #Start the job scheduler in the main parent thread
-    threadJobScheduler()
+    thread.start_new_thread(threadJobScheduler,())
+
+    threadWebApp()
 
 def initialize():
     #load config from etc

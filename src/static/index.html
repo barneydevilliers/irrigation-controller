@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Irrigation System</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <script type="text/javascript">
+           
+ 
+            function onOpenClick(caller)
+            {
+                console.log("Clicking");
+                var x = document.getElementById("demo");
+                x.style.fontSize = "25px";           
+                x.style.color = "red";
+                x.innerHTML = caller.getAttribute("valveid");
+
+                //var jqxhr = $.getJSON('http://127.0.0.1:5000/api/info/valves', function(data) {console.log(data);});
+            }
+            function load() 
+            {
+                var buttonsElement = document.getElementById("buttons");
+                
+                var descriptions = ["One", "Two", "Three"]; 
+                for (index in descriptions)
+                {
+                    console.log("description is " + descriptions[index] );
+                    var element = document.createElement("button");
+                    element.innerHTML = descriptions[index];
+                    element.style.width = (window.innerWidth * 0.9) + "px"; 
+                    element.style.height = "50px"; 
+                    element.onclick = function(){onOpenClick(this);}
+                    element.setAttribute("valveid", index);
+                    buttonsElement.appendChild(element);
+                }
+
+                var element = document.createElement("button");
+                element.innerHTML = "Close All";
+                element.style.width = (window.innerWidth * 0.9) + "px"; 
+                element.style.height = "50px"; 
+                buttonsElement.appendChild(element)
+            }
+            window.onload = load;
+        </script>
+    </head>
+<body>
+
+<h1>What Can JavaScript Do?</h1>
+
+<p id="buttons">Buttons...</p>
+
+<p id="demo">ChangeMe</p>
+
+<script>
+function closeAll() {
+    var x = document.getElementById("demo");
+    x.style.fontSize = "25px";           
+    x.style.color = "red"; 
+}
+</script>
+
+<button type="button" onclick="closeAll()">Close All</button>
+
+
+</body>
+</html> 
