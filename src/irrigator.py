@@ -304,8 +304,8 @@ def threadJobScheduler():
 class ServiceDaemon():
     def __init__(self):
         self.stdin_path = '/dev/null'
-        self.stdout_path = '/dev/tty'
-        self.stderr_path = '/dev/tty'
+        self.stdout_path = '/dev/null'
+        self.stderr_path = '/dev/null'
         self.pidfile_path =  '/tmp/irrigator.pid'
         self.pidfile_timeout = 5
 
