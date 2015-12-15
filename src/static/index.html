@@ -37,7 +37,7 @@
                     var element = document.createElement("button");
                     element.innerHTML = key;
                     element.style.width = (window.innerWidth * 0.9) + "px"; 
-                    element.style.height = "50px"; 
+                    element.style.height = (window.innerHeight * 0.2) + "px"; 
                     element.onclick = function(){onOpenClick(this);}
                     element.setAttribute("valveid", descriptions[key]);
                     buttonsElement.appendChild(element);
@@ -46,7 +46,7 @@
                 var element = document.createElement("button");
                 element.innerHTML = "Close All";
                 element.style.width = (window.innerWidth * 0.9) + "px"; 
-                element.style.height = "50px"; 
+                element.style.height = (window.innerHeight * 0.2) + "px"; 
                 buttonsElement.appendChild(element)
             }
             window.onload = load;
