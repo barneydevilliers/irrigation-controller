@@ -27,7 +27,7 @@ CREATE TABLE `programs` (
   `description` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -55,7 +55,7 @@ CREATE TABLE `programsequence` (
   `runtime` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -64,7 +64,7 @@ CREATE TABLE `programsequence` (
 
 LOCK TABLES `programsequence` WRITE;
 /*!40000 ALTER TABLE `programsequence` DISABLE KEYS */;
-INSERT INTO `programsequence` VALUES (1,1,3,1,40),(2,1,8,2,10),(3,1,6,3,10),(5,2,3,1,5),(6,2,4,2,30),(7,2,8,3,10),(8,2,6,4,10),(10,3,6,1,5);
+INSERT INTO `programsequence` VALUES (1,1,3,1,40),(2,1,8,2,10),(5,2,3,1,5),(6,2,4,2,30),(7,2,8,3,10),(10,3,6,1,5),(11,4,8,1,10);
 /*!40000 ALTER TABLE `programsequence` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -78,11 +78,11 @@ DROP TABLE IF EXISTS `starts`;
 CREATE TABLE `starts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `programid` int(11) DEFAULT NULL,
-  `timeofday` varchar(45) DEFAULT NULL,
-  `days` varchar(4) NOT NULL DEFAULT 'ALL',
+  `timeofday` varchar(60) DEFAULT NULL,
+  `days` varchar(100) NOT NULL DEFAULT 'ALL',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -91,7 +91,7 @@ CREATE TABLE `starts` (
 
 LOCK TABLES `starts` WRITE;
 /*!40000 ALTER TABLE `starts` DISABLE KEYS */;
-INSERT INTO `starts` VALUES (1,1,'06:00','odd'),(2,2,'06:00','even'),(3,3,'12:00','all');
+INSERT INTO `starts` VALUES (1,1,'05:07','Tuesday Thursday Saturday'),(2,2,'05:00','Never'),(3,3,'06:00 12:00','All'),(4,4,'20:52','Never');
 /*!40000 ALTER TABLE `starts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -156,4 +156,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-11-25 10:38:58
+-- Dump completed on 2015-12-15  5:07:54

@@ -205,10 +205,15 @@ def checkForStarts(database):
     #Get even/odd/all day
     dayOfMonth = time.localtime(time.time())[2]
     if (dayOfMonth%2 == 1):
-        evenDaySearchString = " AND ( (starts.days = 'odd') OR (starts.days = 'all') )"
+        evenDaySearchString = "Odd"
     else:
-        evenDaySearchString = " AND ( (starts.days = 'even') OR (starts.days = 'all') )"
-    selectStatement = "SELECT programid FROM starts WHERE starts.timeofday='" + currentTime + "'" + evenDaySearchString
+        evenDaySearchString = "Even"
+
+    dayOfWeek = datetime.datetime.now().strftime('%A')
+
+    selectStatement  = "SELECT programid FROM starts WHERE"
+    selectStatement += " starts.timeofday LIKE '%" + currentTime + "%'"
+    selectStatement += " AND ( (starts.days LIKE '%" + evenDaySearchString + "%') OR (starts.days LIKE '%All%') OR (starts.days LIKE '%" + dayOfWeek + "%'))"
     cursor = database.cursor()
     cursor.execute(selectStatement)
     return cursor.fetchall()
