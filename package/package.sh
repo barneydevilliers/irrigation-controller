@@ -22,9 +22,12 @@ mkdir $FULL_NAME
 cd $FULL_NAME
 
 #create executables
-mkdir -p ./usr/bin/
-cp $BASE_FOLDER/../src/irrigator.py ./usr/bin/
-cp $BASE_FOLDER/../src/valves.py ./usr/bin/
+mkdir -p ./opt/irrigator/bin/
+cp $BASE_FOLDER/../src/*.py ./opt/irrigator/bin/
+
+#create static webpage
+mkdir -p ./opt/irrigator/bin/static
+cp $BASE_FOLDER/../src/static/*.html ./opt/irrigator/bin/static
 
 #create the init script
 mkdir -p ./etc/init.d/
@@ -32,7 +35,7 @@ cp $BASE_FOLDER/../init.d/irrigator ./etc/init.d/
 
 #create config files
 mkdir -p ./etc/
-cp $BASE_FOLDER/../config/irrigation-controller.yaml ./etc/
+cp $BASE_FOLDER/../config/irrigation-controller.yaml ./opt/irrigator/etc/
 
 #create deb config file
 mkdir -p ./DEBIAN/

@@ -17,16 +17,16 @@ case "$1" in
   start)
     echo "Starting server"
     # Start the daemon
-    /usr/bin/python /usr/bin/irrigator.py start
+    /usr/bin/python /opt/irrigator/bin/irrigator.py start
     ;;
   stop)
     echo "Stopping server"
     # Stop the daemon
-    /usr/bin/python /usr/bin/irrigator.py stop
+    /usr/bin/python /opt/irrigator/bin/irrigator.py stop
     ;;
   restart)
     echo "Restarting server"
-    /usr/bin/python /usr/bin/irrigator.py restart
+    /usr/bin/python /opt/irrigator/bin/irrigator.py restart
     ;;
   *)
     # Refuse to do other stuff
