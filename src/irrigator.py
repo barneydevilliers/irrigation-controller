@@ -238,7 +238,7 @@ def route():
 
 
 @restWebApp.route("/api/open/<int:valveid>/<int:opentime>")
-def openValve(valveid,opentime):
+def openValve(valveid,opentime=10):
     log("Manual request to open valve id " + str(valveid) + " for " + str(opentime) + " minutes (WARNING!!! NO auto closing after said minutes yet!!!")
     database = getDatabaseConnection()
     valves = getDependencyValves(valveid,database)

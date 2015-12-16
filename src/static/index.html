@@ -11,7 +11,7 @@
             
             function Get(yourUrl)
             {
-                var Httpreq = new XMLHttpRequest(); // a new request
+                var Httpreq = new XMLHttpRequest();
                 Httpreq.open("GET",yourUrl,false);
                 Httpreq.send(null);
                 return Httpreq.responseText;          
@@ -19,57 +19,65 @@
  
             function onOpenClick(caller)
             {
-                console.log("Clicking");
-                var x = document.getElementById("demo");
-                x.style.fontSize = "25px";           
-                x.style.color = "red";
-                x.innerHTML = caller.getAttribute("valveid");
+                valveId = caller.getAttribute("valveid");
+                console.log("Opening valve " + valveId);
+                var result = Get(getServerBaseUrl() + "/api/open/" + valveId + "/5");
+            }
 
+            function onCloseClick(caller)
+            {
+                valveId = caller.getAttribute("valveid");
+                console.log("Closing valve " + valveId);
+                if (valveId == "-1")
+                {
+                    var result = Get(getServerBaseUrl() + "/api/closeall");
+                }
+                else
+                {
+                    var result = Get(getServerBaseUrl() + "/api/close/" + valveId);
+                }
+            }
+
+
+            function makeButton(type, valveDescription, valveId)
+            {
+                var element = document.createElement("button");
+                element.innerHTML = valveDescription;
+                element.style.width = (window.innerWidth * 0.9) + "px"; 
+                element.style.height = (window.innerHeight * 0.13) + "px"; 
+                element.style.fontSize = (window.innerHeight * 0.11) + "px"
+                if (type == "valve")
+                {
+                    element.onclick = function(){onOpenClick(this);}
+                    element.setAttribute("valveid", valveId);
+                }
+                else if (type == "closeall")
+                {
+                    element.onclick = function(){onCloseClick(this);}
+                    element.setAttribute("valveid", valveId);
+                }
+                return element;
             }
             function load() 
             {
                 var buttonsElement = document.getElementById("buttons");
                 var descriptions = JSON.parse(Get(getServerBaseUrl() + "/api/info/valves"));
-                //var descriptions = ["One", "Two", "Three"]; 
                 for (key in descriptions)
                 {
                     console.log("description is " + key + ":" + descriptions[key] );
-                    var element = document.createElement("button");
-                    element.innerHTML = key;
-                    element.style.width = (window.innerWidth * 0.9) + "px"; 
-                    element.style.height = (window.innerHeight * 0.2) + "px"; 
-                    element.onclick = function(){onOpenClick(this);}
-                    element.setAttribute("valveid", descriptions[key]);
-                    buttonsElement.appendChild(element);
+                    buttonsElement.appendChild(makeButton("valve",key,descriptions[key]));
                 }
 
-                var element = document.createElement("button");
-                element.innerHTML = "Close All";
-                element.style.width = (window.innerWidth * 0.9) + "px"; 
-                element.style.height = (window.innerHeight * 0.2) + "px"; 
-                buttonsElement.appendChild(element)
+                buttonsElement.appendChild(makeButton("closeall","Close All","-1"))
             }
             window.onload = load;
         </script>
     </head>
 <body>
 
-<h1>What Can JavaScript Do?</h1>
+<h1>Irrigation System Manual Control</h1>
 
-<p id="buttons">Buttons...</p>
-
-<p id="demo">ChangeMe</p>
-
-<script>
-function closeAll() {
-    var x = document.getElementById("demo");
-    x.style.fontSize = "25px";           
-    x.style.color = "red"; 
-}
-</script>
-
-<button type="button" onclick="closeAll()">Close All</button>
-
+<p id="buttons"></p>
 
 </body>
 </html> 
