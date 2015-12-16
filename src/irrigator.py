@@ -48,7 +48,7 @@ def loadConfig():
     if ('console' == sys.argv[1]) and (len(sys.argv) > 2):
         configFileName = sys.argv[2]
     else:
-        configFileName = '/etc/irrigation-controller.yaml'
+        configFileName = '/opt/irrigator/etc/irrigation-controller.yaml'
 
 
     configFile = open(configFileName)
