@@ -34,7 +34,7 @@ mkdir -p ./etc/init.d/
 cp $BASE_FOLDER/../init.d/irrigator ./etc/init.d/
 
 #create config files
-mkdir -p ./etc/
+mkdir -p ./opt/irrigator/etc/
 cp $BASE_FOLDER/../config/irrigation-controller.yaml ./opt/irrigator/etc/
 
 #create deb config file
